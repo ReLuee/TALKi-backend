@@ -54,7 +54,7 @@ docker-compose up -d
 ### 3. 애플리케이션 접근
 
 - **API 서버**: http://localhost:8080/api
-- **Health Check**: http://localhost:8080/api/actuator/health
+- **Health Check**: http://localhost:8080/actuator/health
 - **gRPC 서버**: localhost:9090
 - **Nginx (프록시)**: http://localhost
 - **MySQL**: localhost:3306
@@ -81,7 +81,7 @@ docker-compose -f docker-compose.test.yml up -d
 ## API 엔드포인트
 
 ### REST API
-- `GET /api/actuator/health` - 헬스 체크
+- `GET /actuator/health` - 헬스 체크
 - `POST /api/sessions` - 대화 세션 생성
 - `GET /api/sessions/{id}` - 세션 정보 조회
 - `POST /api/audio/upload` - 오디오 파일 업로드
@@ -118,7 +118,7 @@ docker-compose -f docker-compose.test.yml up -d
 ## 모니터링
 
 ### Health Checks
-- Spring Boot Actuator: `/api/actuator/health`
+- Spring Boot Actuator: `/actuator/health`
 - Nginx Health: `/health`
 - Database: MySQL 헬스체크 포함
 
@@ -181,7 +181,7 @@ docker build --target builder -t talki/talki-application:builder .
 
 ```bash
 # 애플리케이션 상태 확인
-curl http://localhost:8080/api/actuator/health
+curl http://localhost:8080/actuator/health
 
 # 컨테이너 상태 확인
 docker-compose ps
