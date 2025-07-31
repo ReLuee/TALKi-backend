@@ -1,31 +1,29 @@
-version: '3.8'
-
 services:
-  # MySQL Database
-  mysql:
-    image: mysql:8.0
-    container_name: talki-mysql
-    environment:
-      MYSQL_ROOT_PASSWORD: rootpassword
-      MYSQL_DATABASE: talki_db
-      MYSQL_USER: talki1234
-      MYSQL_PASSWORD: 123456781!
-      MYSQL_CHARSET: utf8mb4
-      MYSQL_COLLATION: utf8mb4_unicode_ci
-    ports:
-      - "3306:3306"
-    volumes:
-      - mysql_data:/var/lib/mysql
-      - ./docker/mysql/init:/docker-entrypoint-initdb.d
-    networks:
-      - talki-network
-    healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-prootpassword"]
-      timeout: 20s
-      retries: 10
-      interval: 30s
-      start_period: 60s
-    restart: unless-stopped
+  # MySQL Database (commented out - using host MySQL)
+  # mysql:
+  #   image: mysql:8.0
+  #   container_name: talki-mysql
+  #   environment:
+  #     MYSQL_ROOT_PASSWORD: rootpassword
+  #     MYSQL_DATABASE: talki_db
+  #     MYSQL_USER: talki1234
+  #     MYSQL_PASSWORD: 123456781!
+  #     MYSQL_CHARSET: utf8mb4
+  #     MYSQL_COLLATION: utf8mb4_unicode_ci
+  #   ports:
+  #     - "3306:3306"
+  #   volumes:
+  #     - mysql_data:/var/lib/mysql
+  #     - ./docker/mysql/init:/docker-entrypoint-initdb.d
+  #   networks:
+  #     - talki-network
+  #   healthcheck:
+  #     test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-prootpassword"]
+  #     timeout: 20s
+  #     retries: 10
+  #     interval: 30s
+  #     start_period: 60s
+  #   restart: unless-stopped
 
   # Kafka (with Zookeeper)
   zookeeper:
@@ -65,15 +63,15 @@ services:
     restart: unless-stopped
 
   # Spring Boot Application
-  talki-app:
+  talki-backend:
     build:
       context: .
       dockerfile: Dockerfile
-    image: talki/talki-application:${IMAGE_TAG:-latest}
-    container_name: talki-application
+    image: talki/talki-backend:${IMAGE_TAG:-latest}
+    container_name: talki-backend
     depends_on:
-      mysql:
-        condition: service_healthy
+      # mysql:
+      #   condition: service_healthy
       kafka:
         condition: service_healthy
     ports:
@@ -81,7 +79,7 @@ services:
       - "9090:9090"
     environment:
       SPRING_PROFILES_ACTIVE: docker
-      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/talki_db?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Seoul
+      SPRING_DATASOURCE_URL: jdbc:mysql://192.168.0.31:3306/talki_db?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Seoul
       SPRING_DATASOURCE_USERNAME: talki1234
       SPRING_DATASOURCE_PASSWORD: 123456781!
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
@@ -106,7 +104,7 @@ services:
     image: nginx:alpine
     container_name: talki-nginx
     depends_on:
-      talki-app:
+      talki-backend:
         condition: service_healthy
     ports:
       - "80:80"
@@ -140,7 +138,4 @@ volumes:
 networks:
   talki-network:
     driver: bridge
-    ipam:
-      config:
-        - subnet: 172.20.0.0/16
 
